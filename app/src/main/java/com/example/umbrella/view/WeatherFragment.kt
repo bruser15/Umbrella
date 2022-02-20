@@ -85,17 +85,22 @@ class WeatherFragment: Fragment() {
             }) {
                 //
             }
-            binding.tvDay6.text = byDayList.second[0].dt_txt.substring(5,10)
-            date = byDayList.second[0].dt_txt.substring(8,10)
-            byDayList = byDayList.second.partition { it.dt_txt.substring(8,10).contentEquals(date) }
-            binding.rvDay6.adapter = WeatherAdapter(byDayList.first.map {
-                WeatherList(
-                    it.main,
-                    it.weather,
-                    it.dt_txt)
-            }) {
-                //
+            if(byDayList.second.isNotEmpty()) {
+                binding.tvDay6.text = byDayList?.second[0]?.dt_txt.substring(5, 10)
+                date = byDayList.second[0].dt_txt.substring(8, 10)
+                byDayList =
+                    byDayList.second.partition { it.dt_txt.substring(8, 10).contentEquals(date) }
+                binding.rvDay6.adapter = WeatherAdapter(byDayList.first.map {
+                    WeatherList(
+                        it.main,
+                        it.weather,
+                        it.dt_txt
+                    )
+                }) {
+                    //
+                }
             }
+
         }
 
 

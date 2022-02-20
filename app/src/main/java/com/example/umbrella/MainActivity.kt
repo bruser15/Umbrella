@@ -1,6 +1,7 @@
 package com.example.umbrella
 
 import android.content.DialogInterface
+import android.graphics.drawable.ColorDrawable
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.text.InputType
@@ -10,7 +11,11 @@ import android.view.MenuItem
 import android.widget.EditText
 import android.widget.TextView
 import androidx.appcompat.app.AlertDialog
+import androidx.core.content.res.ResourcesCompat
 import com.example.umbrella.databinding.ActivityMainBinding
+import com.example.umbrella.model.UNIT_C
+import com.example.umbrella.model.UNIT_F
+import com.example.umbrella.model.UNIT_K
 import com.example.umbrella.model.local.ZipcodeCache
 import com.example.umbrella.modelview.WeatherProvider
 import com.example.umbrella.modelview.WeatherViewModel
@@ -36,6 +41,7 @@ class MainActivity : AppCompatActivity() {
             .add(R.id.container, WeatherFragment())
             .commit()
         val zipcodeCache = ZipcodeCache(this)
+        val units = zipcodeCache.getSavedUnit()
         if(zipcodeCache.getSavedZip() == 0){
             val dialogBuilder = AlertDialog.Builder(this)
             val input = EditText(this)
@@ -55,7 +61,6 @@ class MainActivity : AppCompatActivity() {
         }
         else{
             viewModel.findLocation(zipcodeCache.getSavedZip())
-            Log.d("Main ", "onCreate: unit ${zipcodeCache.getSavedUnit()}")
         }
         viewModel.geo.observe(this){
             findViewById<TextView>(R.id.tv_location).text = viewModel.geo.value?.name ?: ""
@@ -63,7 +68,22 @@ class MainActivity : AppCompatActivity() {
         }
 
         viewModel.weather.observe(this){
-            Log.d("Main ", "onCreate: ${viewModel.weather.value?.list}")
+            if(
+                (units.contentEquals(UNIT_F) && it.list[0].main.temp > 60F)
+                || (units.contentEquals(UNIT_C) && it.list[0].main.temp > 15.5F)
+                || (units.contentEquals(UNIT_K) && it.list[0].main.temp > 288.7F)
+            ){
+                // it's getting to this code correctly, but the color isn't changing
+                //Log.d("SETCOLOR ", "onCreate: ")
+                supportActionBar?.setBackgroundDrawable(
+                    ColorDrawable(ResourcesCompat.getColor(resources, R.color.warm, theme))
+                )
+                binding.toolbar.background =
+                    ColorDrawable(ResourcesCompat.getColor(resources, R.color.warm, theme))
+            }
+            else{
+                binding.toolbar.setBackgroundColor(resources.getColor(R.color.cool))
+            }
             findViewById<TextView>(R.id.tv_temperature).text = viewModel.weather.value?.list?.get(0)?.main?.temp?.toInt()
                 .toString()
             findViewById<TextView>(R.id.tv_weather).text =
